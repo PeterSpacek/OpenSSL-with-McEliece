@@ -1,1 +1,2 @@
-# cautious-adventure
+# McEliece implementation for openSSL
+
