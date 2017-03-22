@@ -1,48 +1,21 @@
-
-#include <openssl/engine.h>
-
-static const char *engine_id = "silly";
-static const char *engine_name = "A silly engine for demonstration purposes";
-
-static int bind(ENGINE *e, const char *id)
-{
-  int ret = 0;
-
-  if (!ENGINE_set_id(e, engine_id)) {
-    fprintf(stderr, "ENGINE_set_id failed\n");
-    goto end;
-  }
-  if (!ENGINE_set_name(e, engine_name)) {
-    printf("ENGINE_set_name failed\n");
-    goto end;
-  }
-
-  ret = 1;
- end:
-  return ret;
-}
-
-IMPLEMENT_DYNAMIC_BIND_FN(bind)
-IMPLEMENT_DYNAMIC_CHECK_FN()
-
-
-
-
 /*
  This file is part of BitPunch
  Copyright (C) 2014-2015 Frantisek Uhrecky <frantisek.uhrecky[what here]gmail.com>
+
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
+
  This program is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
+
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-/*
+
 #include <bitpunch/bitpunch.h>
 #include "bitpunch/tools.h"
 
@@ -53,10 +26,8 @@ IMPLEMENT_DYNAMIC_CHECK_FN()
 
 #include <bitpunch/crypto/hash/sha512.h>
 #include <bitpunch/asn1/asn1.h>
-#include <libtasn1.h>
 #include <bitpunch/math/bigint.h>
 #include <bitpunch/math/uni.h>
-
 
 int testCmpMecsCtx(const BPU_T_Mecs_Ctx * ctx1, const BPU_T_Mecs_Ctx * ctx2) {
     int i, j, rc = 0;
@@ -293,7 +264,6 @@ int testKeyGenAsn1() {
     BPU_mecsFreeCtx(&ctx);
     BPU_mecsFreeCtx(&ctx_2);
     BPU_mecsFreeParamsGoppa(&params);
-
     return rc;
 }
 #endif
@@ -305,11 +275,9 @@ int main(int argc, char **argv) {
     BPU_T_UN_Mecs_Params params;
 
     srand(time(NULL));
-
-#ifdef BPU_CONF_ASN1
+#if !defined(BPU_CONF_GOPPA_WO_H) && defined(BPU_CONF_ASN1)
     testKeyGenAsn1();
 #endif
-    return 0;
 
 //  /***************************************/
 //     // mce initialisation t = 50, m = 11
@@ -387,4 +355,3 @@ int main(int argc, char **argv) {
 
     return rc;
 }
-*/
