@@ -2,12 +2,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <openssl/crypto.h>
-#include <openssl/buffer.h>
-#include <openssl/engine.h>
-
-#include <openssl/bn.h>
-#include <openssl/err.h>
 
 
 #include <bitpunch/bitpunch.h>
@@ -41,6 +35,7 @@ int mecs_init() {
         // mce initialisation t = 50, m = 11
         fprintf(stderr, "Basic GOPPA Initialisation...\n");
         if (BPU_mecsInitParamsGoppa(&params,13 , 119, 0x2129)) {
+    //    if (BPU_mecsInitParamsGoppa(&params,11 , 50,  0)) {
             return 1;
         }
 
@@ -196,7 +191,7 @@ return(ctx->pt_len);
 
 
 int main(int argc, const char* argv[] ) {
-//	mecs_init();
+	mecs_init();
 	int len =4;
 	int outlen=-1;
 	int rc = 0;
@@ -211,14 +206,14 @@ int main(int argc, const char* argv[] ) {
 	//  unsigned char * copy;
 	//  strcpy(copy, "HHHH");
 	//  strcpy(to, "AHOJ");
-	  outlen = public_encrypt(len, fromm, copy, &rsa, 50);
+	  outlen = public_encrypt(len, fromm, copy, &rsa, 50)/8;
 
 	  printf("%s",fromm);
 	  printf("\n");
 	  printf("%s\n",copy);
 
-	  private_decrypt(outlen/8,copy,to, &rsa, 50);
-	  printf("%i,\n",outlen/8);
+	  private_decrypt(outlen,copy,to, &rsa, 50);
+	  printf("%i,\n",outlen);
 //	  char2gf2Vec(fromm,len,pt);
 //	  gf2Vec2char(pt,4,to);
 

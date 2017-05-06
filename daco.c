@@ -28,8 +28,6 @@
 #define NID_id_Mecs_1	0x2129
 #define NID_id_Mecs_2	0
 
-static EVP_PKEY_METHOD *mecs_pmeth= NULL;
-
 static const char *engine_id ="bpMECS";
 static const char *engine_name ="BitPuch McEliece implementation for OpenSSL";
 
@@ -170,7 +168,7 @@ static int mecs_encrypt(EVP_PKEY_CTX *pctx, unsigned char *to, size_t *outlen,  
 
 /* decrypt */
 //static int mecs_decrypt(EVP_PKEY_CTX pctx, int len, const unsigned char *from, unsigned char *to, RSA *rsa, int padding){
-static int mecs_decrypt(EVP_PKEY_CTX * pctx, unsigned char *to, size_t *outlen,const unsigned char *from, size_t inlen){
+static int mecs_decrypt(EVP_PKEY_CTX * pctx, const unsigned char *from, size_t inlen, unsigned char *to,  size_t *outlen){
 	//int outlen=-1;
 	int rc = 0;
 	BPU_T_Mecs_Ctx *ctx = NULL;
@@ -218,6 +216,56 @@ static int mecs_decrypt(EVP_PKEY_CTX * pctx, unsigned char *to, size_t *outlen,c
   	return *outlen/8;
 }
 
+static RSA_METHOD mecs2 =
+{
+		 /* name of the implementation */
+		  "McEliece",
+
+		    /* encrypt */
+		  mecs_encrypt,
+
+		    /* verify arbitrary data */
+		  NULL,
+		    /* sign arbitrary data */
+		  NULL,
+
+		    /* decrypt */
+		  mecs_decrypt,
+
+		    /* compute r0 = r0 ^ I mod rsa->n (May be NULL for some
+		                                       implementations) */
+		  NULL,
+
+		    /* compute r = a ^ p mod m (May be NULL for some implementations) */
+		  NULL,
+
+		    /* called at RSA_new */
+		  NULL,
+
+		    /* called at RSA_free */
+		  NULL,
+		  /* RSA_FLAG_EXT_PKEY        - rsa_mod_exp is called for private key
+		      *                            operations, even if p,q,dmp1,dmq1,iqmp
+		      *                            are NULL
+		      * RSA_FLAG_SIGN_VER        - enable rsa_sign and rsa_verify
+		      * RSA_METHOD_FLAG_NO_CHECK - don't check pub/private match
+		      */
+		  0,
+
+		  NULL,
+
+		     /* sign. For backward compatibility, this is used only
+		      * if (flags & RSA_FLAG_SIGN_VER)
+		      */
+		  NULL,
+
+		     /* verify. For backward compatibility, this is used only
+		      * if (flags & RSA_FLAG_SIGN_VER)
+		      */
+		  NULL
+};
+
+static EVP_PKEY_METHOD *mecs_pmeth= NULL;
 
 	static void pkey_free_mecs(EVP_PKEY *key)
 		{
@@ -248,46 +296,46 @@ static int mecs_decrypt(EVP_PKEY_CTX * pctx, unsigned char *to, size_t *outlen,c
     *meth = NULL;
     return 0;
 }
+	/*
+	int register_ameth_mecs (int nid, EVP_PKEY_ASN1_METHOD **ameth, const char* pemstr, const char* info)
+		{
+		*ameth =	EVP_PKEY_asn1_new(nid,
+			ASN1_PKEY_SIGPARAM_NULL, pemstr, info);
+		if (!*ameth) return 0;
+		switch (nid)
+			{
+			case NID_id_Mecs_1:
+				EVP_PKEY_asn1_set_free (*ameth, pkey_free_mecs);
+				EVP_PKEY_asn1_set_private (*ameth,
+					priv_decode_mecs, priv_encode_mecs,
+					priv_print_mecs);
+				EVP_PKEY_asn1_set_param (*ameth,
+						mecs_param_decode, mecs_param_encode,
+					param_missing_mecs, param_copy_mecs,
+					param_cmp_mecs,param_print_mecs );
+				EVP_PKEY_asn1_set_public (*ameth,
+					pub_decode_mecs, pub_encode_mecs,
+					pub_cmp_mecs, pub_print_mecs,
+					pkey_size_mecs, pkey_bits_mecs);
 
-	static int mecs_ctrl(EVP_PKEY_CTX * pctx, const char * type, const char * value){
-	//	if(strcmp(type,"KEY")){
-			fprintf(stderr, "%s",value);
-	//	}
-			return 1;
-	}
+				EVP_PKEY_asn1_set_ctrl (*ameth, pkey_ctrl_mecs);
+				break;
+			}
+		return 1;
+		}
+		*/
 
 
-	static int pkey_keygen(EVP_PKEY_CTX *ctx, EVP_PKEY *pkey)
-	{
-	    RSA *rsa = NULL;
-	    rsa = RSA_new();
-	    if (rsa == NULL)
-	        return 0;
-
-        EVP_PKEY_assign(pkey,0, rsa);
-
-	    return 0;
-	}
 
 int register_pmeth_mecs(int id, EVP_PKEY_METHOD **pmeth, int flags){
 //	mecs_pkey_meths=
 	*pmeth = EVP_PKEY_meth_new(id, flags);
 	if (!*pmeth)
 	     return 0;
-	EVP_PKEY_meth_set_encrypt(*pmeth,NULL,mecs_encrypt);
-	EVP_PKEY_meth_set_decrypt(*pmeth,NULL,mecs_decrypt);
-	EVP_PKEY_meth_set_keygen(*pmeth,NULL,pkey_keygen);
-	EVP_PKEY_meth_set_ctrl(*pmeth, NULL, mecs_ctrl);
-
-  //  RSA *rsa = NULL;
- //   rsa = RSA_new();
-//    EVP_PKEY *pkey;
- //   pkey=EVP_PKEY_new();
-//    EVP_PKEY_assign(pkey,1, rsa);
+	EVP_PKEY_meth_set_encrypt(pmeth,NULL,mecs_encrypt);
+	EVP_PKEY_meth_set_decrypt(pmeth,NULL,mecs_decrypt);
 
 }
-
-
 
 static int bind(ENGINE *e, const char *id)
     {
